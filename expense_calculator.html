@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monthly Expense Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 24px 32px 32px 32px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    form {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    form input[type="number"],
+    form input[type="date"],
+    form input[type="text"] {
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1em;
+      flex: 1 1 120px;
+    }
+    form button {
+      padding: 8px 18px;
+      background: #1976d2;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    form button:hover {
+      background: #125ea8;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+    th, td {
+      padding: 8px 6px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+    th {
+      background: #f0f4f8;
+    }
+    .indicators {
+      background: #f9fafb;
+      padding: 16px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+    .indicators h2 {
+      margin-top: 0;
+      font-size: 1.1em;
+      color: #1976d2;
+    }
+    .top-expenses-list {
+      margin: 0;
+      padding-left: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Monthly Expense Calculator</h1>
+    <form id="expense-form">
+      <input type="number" id="amount" placeholder="Amount" min="0.01" step="0.01" required>
+      <input type="date" id="date" required>
+      <input type="text" id="description" placeholder="Description" required>
+      <button type="submit">Add Expense</button>
+    </form>
+
+    <div class="indicators">
+      <h2>Indicators</h2>
+      <div>Total Expenses: $<span id="total-expenses">0.00</span></div>
+      <div>Average Daily Expense: $<span id="avg-daily">0.00</span></div>
+      <div>Top 3 Largest Expenses:
+        <ol class="top-expenses-list" id="top-expenses">
+          <li>—</li>
+          <li>—</li>
+          <li>—</li>
+        </ol>
+      </div>
+    </div>
+
+    <table id="expenses-table">
+      <thead>
+        <tr>
+          <th>Amount ($)</th>
+          <th>Date</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Expenses will be inserted here -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const expenses = [];
+    const form = document.getElementById('expense-form');
+    const amountInput = document.getElementById('amount');
+    const dateInput = document.getElementById('date');
+    const descInput = document.getElementById('description');
+    const tableBody = document.querySelector('#expenses-table tbody');
+    const totalSpan = document.getElementById('total-expenses');
+    const avgDailySpan = document.getElementById('avg-daily');
+    const topExpensesList = document.getElementById('top-expenses');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const amount = parseFloat(amountInput.value);
+      const date = dateInput.value;
+      const description = descInput.value.trim();
+      if (!amount || !date || !description) return;
+      expenses.push({ amount, date, description });
+      amountInput.value = '';
+      dateInput.value = '';
+      descInput.value = '';
+      renderExpenses();
+      renderIndicators();
+    });
+
+    function renderExpenses() {
+      tableBody.innerHTML = '';
+      expenses.forEach(exp => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${exp.amount.toFixed(2)}</td>
+          <td>${exp.date}</td>
+          <td>${exp.description}</td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
+
+    function renderIndicators() {
+      // Total
+      const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+      totalSpan.textContent = total.toFixed(2);
+      // Average daily
+      const uniqueDays = new Set(expenses.map(exp => exp.date));
+      const avg = uniqueDays.size ? total / uniqueDays.size : 0;
+      avgDailySpan.textContent = avg.toFixed(2);
+      // Top 3
+      const top3 = [...expenses].sort((a, b) => b.amount - a.amount).slice(0, 3);
+      topExpensesList.innerHTML = '';
+      if (top3.length === 0) {
+        topExpensesList.innerHTML = '<li>—</li><li>—</li><li>—</li>';
+      } else {
+        for (let i = 0; i < 3; i++) {
+          if (top3[i]) {
+            topExpensesList.innerHTML += `<li>$${top3[i].amount.toFixed(2)} — ${top3[i].description} (${top3[i].date})</li>`;
+          } else {
+            topExpensesList.innerHTML += '<li>—</li>';
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html> 
